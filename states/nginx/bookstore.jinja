@@ -1,0 +1,28 @@
+# Upstream backend APIs
+upstream backend_api {
+    {% for backend, ips in backend_servers.items() %}
+        {% for ip in ips %}
+    server {{ ip }}:5000;
+        {% endfor %}
+    {% endfor %}
+}
+
+server {
+    listen 80;
+    server_name {{ server_name }};
+
+    # ==============================
+    # Frontend React Dev Server Proxy
+    # ==============================
+    location / {
+        proxy_pass http://{{ frontend_server }};
+        proxy_set_header Host $host;
+    }
+
+    # ==============================
+    # API Proxy
+    # ==============================
+    location /api/ {
+        proxy_pass http://backend_api/;
+    }
+}
